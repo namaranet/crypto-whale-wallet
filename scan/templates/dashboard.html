@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Whale Tracker{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-4">🐋 Whale Dashboard</h1>
+        <p class="lead">Real-time cryptocurrency whale monitoring and analytics</p>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-fish fa-2x mb-2"></i>
+                <h3>{{ "{:,}".format(stats.total_whales) }}</h3>
+                <p class="mb-0">Total Whales</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+                <h3>${{ "{:,.0f}".format(stats.total_volume) }}</h3>
+                <p class="mb-0">Total Volume</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-exchange-alt fa-2x mb-2"></i>
+                <h3>{{ "{:,}".format(stats.total_transactions) }}</h3>
+                <p class="mb-0">Transactions</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-2x mb-2"></i>
+                <h3>{{ stats.recent_activity }}</h3>
+                <p class="mb-0">Last 24h</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-pie"></i> Chain Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="chainChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar"></i> Volume by Chain</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="volumeChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Whales and Recent Transactions -->
+<div class="row">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-trophy"></i> Top Whales</h5>
+                <a href="/whales" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Rank</th>
+                                <th>Address</th>
+                                <th>Score</th>
+                                <th>Volume</th>
+                                <th>Transactions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for whale in top_whales %}
+                            <tr class="whale-card">
+                                <td>
+                                    <span class="badge bg-primary">#{{ loop.index }}</span>
+                                </td>
+                                <td>
+                                    <a href="/whale/{{ whale.address }}" class="text-decoration-none">
+                                        <code class="address-short">{{ whale.address[:16] }}...</code>
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="whale-score">{{ "%.1f"|format(whale.whale_score) }}</span>
+                                </td>
+                                <td>
+                                    <strong>${{ "{:,.0f}".format(whale.total_volume_usd) }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ whale.transaction_count }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-clock"></i> Recent Activity</h5>
+                <a href="/transactions" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% for tx in recent_transactions %}
+                <div class="transaction-row p-3 border-bottom
+                    {% if 'ULTRA' in tx.whale_category %}tx-ultra
+                    {% elif 'MEGA' in tx.whale_category %}tx-mega  
+                    {% elif 'LARGE' in tx.whale_category %}tx-large
+                    {% endif %}">
+                    
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fw-bold">
+                                {{ tx.whale_category }} 
+                                <span class="badge bg-secondary">{{ tx.chain.upper() }}</span>
+                            </div>
+                            <div class="text-muted small">
+                                <i class="fas fa-coins"></i> {{ "%.2f"|format(tx.value_native) }} {{ tx.token_symbol }}
+                            </div>
+                            <div class="text-muted small">
+                                <code>{{ tx.hash[:20] }}...</code>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-success">
+                                ${{ "{:,.0f}".format(tx.value_usd) }}
+                            </div>
+                            <div class="text-muted small">
+                                {{ tx.timestamp | format_time }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if not recent_transactions %}
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-search fa-2x mb-2"></i>
+                    <p>No recent transactions found</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Activity Feed -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-rss"></i> Live Activity Feed</h5>
+            </div>
+            <div class="card-body">
+                <div id="activity-feed">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-satellite-dish fa-2x mb-2"></i>
+                        <p>Monitoring blockchain for whale activity...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Chain Distribution Chart
+const chainLabels = {{ stats.chain_stats | map(attribute='chain') | list | tojson }};
+const chainData = {{ stats.chain_stats | map(attribute='count') | list | tojson }};
+const chainColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+
+const chainCtx = document.getElementById('chainChart').getContext('2d');
+new Chart(chainCtx, {
+    type: 'doughnut',
+    data: {
+        labels: chainLabels,
+        datasets: [{
+            data: chainData,
+            backgroundColor: chainColors,
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Volume Chart
+const volumeData = {{ stats.chain_stats | map(attribute='volume') | list | tojson }};
+
+const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+new Chart(volumeCtx, {
+    type: 'bar',
+    data: {
+        labels: chainLabels,
+        datasets: [{
+            label: 'Volume (USD)',
+            data: volumeData,
+            backgroundColor: chainColors,
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '$' + value.toLocaleString();
+                    }
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Simulate live activity updates
+function simulateLiveActivity() {
+    const activities = [
+        "🐋 Ultra whale detected: $2.1M USDT transfer",
+        "🦈 Mega whale activity: 450 ETH moved to exchange", 
+        "🐳 Large whale: $180K USDC swap detected",
+        "📊 New whale discovered via DEX scanning",
+        "⚠️ Wash trading pattern detected between 2 addresses",
+        "🔄 Cross-chain arbitrage: ETH → Polygon bridge"
+    ];
+    
+    const feedElement = document.getElementById('activity-feed');
+    
+    function addActivity() {
+        const activity = activities[Math.floor(Math.random() * activities.length)];
+        const timestamp = new Date().toLocaleTimeString();
+        
+        const activityHtml = `
+            <div class="border-bottom pb-2 mb-2 fade-in">
+                <div class="d-flex justify-content-between">
+                    <span>${activity}</span>
+                    <small class="text-muted">${timestamp}</small>
+                </div>
+            </div>
+        `;
+        
+        feedElement.innerHTML = activityHtml + feedElement.innerHTML;
+        
+        // Keep only last 5 activities
+        const activities = feedElement.children;
+        if (activities.length > 5) {
+            feedElement.removeChild(activities[activities.length - 1]);
+        }
+    }
+    
+    // Add first activity immediately
+    setTimeout(addActivity, 1000);
+    
+    // Then add every 10-15 seconds
+    setInterval(addActivity, Math.random() * 5000 + 10000);
+}
+
+simulateLiveActivity();
+</script>
+
+<style>
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}

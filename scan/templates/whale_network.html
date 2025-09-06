@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+
+{% block title %}Network Graph - {{ whale.address[:10] }}... - Whale Tracker{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/whales">Whales</a></li>
+                <li class="breadcrumb-item"><a href="/whale/{{ whale.address }}">{{ whale.address[:16] }}...</a></li>
+                <li class="breadcrumb-item active">Network Graph</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Whale Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4 class="mb-0">🕸️ Network Graph for Whale</h4>
+                        <code class="address-short">{{ whale.address }}</code>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="whale-score">Score: {{ "%.1f"|format(whale.whale_score) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Controls -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label">Layout</label>
+                        <select class="form-select" id="layoutSelect">
+                            <option value="force">Force Directed</option>
+                            <option value="circular">Circular</option>
+                            <option value="radial">Radial</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Node Size</label>
+                        <select class="form-select" id="nodeSizeSelect">
+                            <option value="score">By Whale Score</option>
+                            <option value="volume">By Volume</option>
+                            <option value="uniform">Uniform</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Edge Width</label>
+                        <select class="form-select" id="edgeWidthSelect">
+                            <option value="transactions">By Transaction Count</option>
+                            <option value="volume">By Volume</option>
+                            <option value="uniform">Uniform</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Actions</label>
+                        <div>
+                            <button class="btn btn-primary btn-sm" onclick="resetZoom()">
+                                <i class="fas fa-search-minus"></i> Reset Zoom
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6>Network Stats</h6>
+                <div id="networkStats">
+                    <div class="d-flex justify-content-between">
+                        <span>Connected Nodes:</span>
+                        <span id="nodeCount">-</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Total Connections:</span>
+                        <span id="edgeCount">-</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Center Whale Score:</span>
+                        <span id="centerScore">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Network Graph -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-project-diagram"></i> Interactive Network Graph</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#legendModal">
+                        <i class="fas fa-info-circle"></i> Legend
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div id="networkGraph" style="width: 100%; height: 600px; overflow: hidden;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Legend Modal -->
+<div class="modal fade" id="legendModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Network Graph Legend</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Node Types</h6>
+                <ul class="list-unstyled">
+                    <li><span style="color: #ff6b6b; font-size: 18px;">●</span> Center Whale (You are viewing)</li>
+                    <li><span style="color: #4ecdc4; font-size: 18px;">●</span> Other Whales</li>
+                    <li><span style="color: #f39c12; font-size: 18px;">●</span> Exchange Addresses</li>
+                    <li><span style="color: #9b59b6; font-size: 18px;">●</span> Protocol/DEX Addresses</li>
+                    <li><span style="color: #95a5a6; font-size: 18px;">●</span> Unknown Addresses</li>
+                </ul>
+                
+                <h6>Node Size</h6>
+                <p>Larger nodes = Higher whale score or volume</p>
+                
+                <h6>Edge Width</h6>
+                <p>Thicker lines = More transactions or higher volume</p>
+                
+                <h6>Interactions</h6>
+                <ul>
+                    <li>Click and drag nodes to reposition</li>
+                    <li>Hover over nodes for details</li>
+                    <li>Zoom with mouse wheel</li>
+                    <li>Pan by dragging empty space</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Node Details Modal -->
+<div class="modal fade" id="nodeDetailsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Address Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="nodeDetailsContent">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+// Global variables
+let svg, simulation, nodes, edges;
+let networkData = null;
+
+// Initialize the network graph
+async function initNetworkGraph() {
+    try {
+        const response = await fetch(`/api/network/{{ whale.address }}`);
+        networkData = await response.json();
+        
+        // Update stats
+        document.getElementById('nodeCount').textContent = networkData.stats.connected_nodes;
+        document.getElementById('edgeCount').textContent = networkData.stats.total_connections;
+        document.getElementById('centerScore').textContent = networkData.stats.center_whale_score.toFixed(1);
+        
+        // Create the graph
+        createGraph(networkData);
+        
+    } catch (error) {
+        console.error('Error loading network data:', error);
+        document.getElementById('networkGraph').innerHTML = 
+            '<div class="text-center p-5"><h5>Error loading network data</h5><p>Please try again later.</p></div>';
+    }
+}
+
+function createGraph(data) {
+    // Clear previous graph
+    d3.select("#networkGraph").selectAll("*").remove();
+    
+    const container = d3.select("#networkGraph");
+    const width = container.node().getBoundingClientRect().width;
+    const height = 600;
+    
+    // Create SVG
+    svg = container.append("svg")
+        .attr("width", width)
+        .attr("height", height);
+    
+    // Add zoom behavior
+    const zoom = d3.zoom()
+        .scaleExtent([0.1, 4])
+        .on("zoom", (event) => {
+            svg.select("g").attr("transform", event.transform);
+        });
+    
+    svg.call(zoom);
+    
+    // Create main group for zoomable content
+    const g = svg.append("g");
+    
+    // Create force simulation
+    simulation = d3.forceSimulation(data.nodes)
+        .force("link", d3.forceLink(data.edges).id(d => d.id).distance(100))
+        .force("charge", d3.forceManyBody().strength(-300))
+        .force("center", d3.forceCenter(width / 2, height / 2));
+    
+    // Create edges
+    const link = g.append("g")
+        .selectAll("line")
+        .data(data.edges)
+        .enter().append("line")
+        .attr("stroke", "#999")
+        .attr("stroke-opacity", 0.6)
+        .attr("stroke-width", d => d.width || 2);
+    
+    // Create nodes
+    const node = g.append("g")
+        .selectAll("circle")
+        .data(data.nodes)
+        .enter().append("circle")
+        .attr("r", d => d.size || 10)
+        .attr("fill", d => {
+            switch(d.type) {
+                case 'center_whale': return '#ff6b6b';
+                case 'whale': return '#4ecdc4';
+                case 'exchange': return '#f39c12';
+                case 'protocol': return '#9b59b6';
+                default: return '#95a5a6';
+            }
+        })
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 2)
+        .style("cursor", "pointer")
+        .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended));
+    
+    // Add labels
+    const label = g.append("g")
+        .selectAll("text")
+        .data(data.nodes)
+        .enter().append("text")
+        .text(d => d.label)
+        .attr("font-size", "12px")
+        .attr("font-family", "Arial")
+        .attr("fill", "#333")
+        .attr("text-anchor", "middle")
+        .attr("dy", ".35em")
+        .style("pointer-events", "none");
+    
+    // Add tooltips
+    node.append("title")
+        .text(d => `${d.label}\nAddress: ${d.id}\nType: ${d.type}\nExchange: ${d.exchange}\nChain: ${d.chain}\nScore: ${d.score}\nVolume: $${d.volume.toLocaleString()}`);
+    
+    // Add click handler for nodes
+    node.on("click", (event, d) => {
+        showNodeDetails(d);
+    });
+    
+    // Update positions on simulation tick
+    simulation.on("tick", () => {
+        link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+        
+        node
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y);
+        
+        label
+            .attr("x", d => d.x)
+            .attr("y", d => d.y + d.size + 15);
+    });
+    
+    // Store references
+    nodes = node;
+    edges = link;
+}
+
+function dragstarted(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+}
+
+function dragged(event, d) {
+    d.fx = event.x;
+    d.fy = event.y;
+}
+
+function dragended(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+}
+
+function resetZoom() {
+    svg.transition()
+        .duration(750)
+        .call(d3.zoom().transform, d3.zoomIdentity);
+}
+
+function showNodeDetails(nodeData) {
+    const isWhale = nodeData.type.includes('whale');
+    const modal = new bootstrap.Modal(document.getElementById('nodeDetailsModal'));
+    
+    const content = `
+        <div class="mb-3">
+            <label class="form-label">Address</label>
+            <div class="input-group">
+                <input type="text" class="form-control" value="${nodeData.id}" readonly>
+                <button class="btn btn-outline-secondary" onclick="copyToClipboard('${nodeData.id}')">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-6">
+                <label class="form-label">Type</label>
+                <div class="fw-bold ${nodeData.type === 'center_whale' ? 'text-danger' : nodeData.type === 'whale' ? 'text-info' : nodeData.type === 'exchange' ? 'text-warning' : nodeData.type === 'protocol' ? 'text-purple' : 'text-muted'}">
+                    ${nodeData.type.replace('_', ' ').toUpperCase()}
+                </div>
+            </div>
+            <div class="col-6">
+                <label class="form-label">Whale Score</label>
+                <div class="fw-bold">${nodeData.score.toFixed(1)}</div>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-6">
+                <label class="form-label">Exchange/Protocol</label>
+                <div class="fw-bold text-primary">${nodeData.exchange}</div>
+            </div>
+            <div class="col-6">
+                <label class="form-label">Blockchain</label>
+                <div class="fw-bold text-success">${nodeData.chain.toUpperCase()}</div>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Total Volume</label>
+            <div class="fw-bold text-success">$${nodeData.volume.toLocaleString()}</div>
+        </div>
+        
+        <div class="text-center">
+            ${isWhale ? `<a href="/whale/${nodeData.id}" class="btn btn-primary">View Whale Profile</a>` : ''}
+        </div>
+    `;
+    
+    document.getElementById('nodeDetailsContent').innerHTML = content;
+    modal.show();
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text);
+    // Show brief success feedback
+    event.target.innerHTML = '<i class="fas fa-check"></i>';
+    setTimeout(() => {
+        event.target.innerHTML = '<i class="fas fa-copy"></i>';
+    }, 1000);
+}
+
+// Event handlers for controls
+document.getElementById('layoutSelect').addEventListener('change', (e) => {
+    // Layout changes would be implemented here
+    console.log('Layout changed to:', e.target.value);
+});
+
+document.getElementById('nodeSizeSelect').addEventListener('change', (e) => {
+    // Node size changes would be implemented here
+    console.log('Node size changed to:', e.target.value);
+});
+
+document.getElementById('edgeWidthSelect').addEventListener('change', (e) => {
+    // Edge width changes would be implemented here  
+    console.log('Edge width changed to:', e.target.value);
+});
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    initNetworkGraph();
+});
+
+// Handle window resize
+window.addEventListener('resize', () => {
+    if (networkData) {
+        setTimeout(() => createGraph(networkData), 100);
+    }
+});
+</script>
+
+<style>
+.address-short {
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+#networkGraph {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.network-controls .form-label {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+#networkStats {
+    font-size: 0.9rem;
+}
+
+#networkStats .d-flex {
+    margin-bottom: 0.25rem;
+}
+</style>
+{% endblock %}

@@ -5,7 +5,7 @@ from collections import defaultdict, Counter
 import csv
 
 # ====== CONFIG ======
-ETHERSCAN_API_KEY = "YOUR_ETHERSCAN_API_KEY"
+ETHERSCAN_API_KEY = "UQBC8ZX5PYJPVI8KXZ92QA5D98P6Z1EI45"
 COINGECKO_API_BASE = "https://api.coingecko.com/api/v3"
 
 # Major DEX contract addresses on Ethereum

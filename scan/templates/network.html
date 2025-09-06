@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block title %}Network Graph - Whale Tracker{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="fas fa-project-diagram"></i> Whale Network Graph</h1>
+        <p class="text-muted">Interactive visualization of whale transaction relationships</p>
+    </div>
+</div>
+
+<!-- Controls -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label">Minimum Volume</label>
+                        <select class="form-select" id="minVolumeSelect">
+                            <option value="5000">$5,000+</option>
+                            <option value="10000" selected>$10,000+</option>
+                            <option value="50000">$50,000+</option>
+                            <option value="100000">$100,000+</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Layout</label>
+                        <select class="form-select" id="layoutSelect">
+                            <option value="force">Force Directed</option>
+                            <option value="circular">Circular</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Show Labels</label>
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" id="showLabels" checked>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Actions</label>
+                        <div>
+                            <button class="btn btn-primary btn-sm" onclick="resetZoom()">
+                                <i class="fas fa-search-minus"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6>Network Overview</h6>
+                <div id="networkStats">
+                    <div class="d-flex justify-content-between">
+                        <span>Total Nodes:</span>
+                        <span id="nodeCount">-</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Connections:</span>
+                        <span id="edgeCount">-</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Whales:</span>
+                        <span id="whaleCount">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Network Graph -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-sitemap"></i> Overall Whale Network</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#helpModal">
+                        <i class="fas fa-question-circle"></i> Help
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div id="networkGraph" style="width: 100%; height: 700px; overflow: hidden;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">How to Use the Network Graph</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Node Colors</h6>
+                        <ul class="list-unstyled">
+                            <li><span style="color: #4ecdc4; font-size: 18px;">●</span> Whale Addresses</li>
+                            <li><span style="color: #f39c12; font-size: 18px;">●</span> Exchange Addresses</li>
+                            <li><span style="color: #9b59b6; font-size: 18px;">●</span> Protocol/DEX Addresses</li>
+                            <li><span style="color: #95a5a6; font-size: 18px;">●</span> Unknown Addresses</li>
+                        </ul>
+                        
+                        <h6>Node Sizes</h6>
+                        <p>Size represents whale score - larger nodes are bigger whales</p>
+                        
+                        <h6>Edge Thickness</h6>
+                        <p>Thicker lines represent more transactions between addresses</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Interactions</h6>
+                        <ul>
+                            <li>Click and drag nodes to reposition them</li>
+                            <li>Hover over nodes to see details</li>
+                            <li>Click nodes to view whale profiles</li>
+                            <li>Use mouse wheel to zoom in/out</li>
+                            <li>Drag empty space to pan around</li>
+                        </ul>
+                        
+                        <h6>Controls</h6>
+                        <ul>
+                            <li>Adjust minimum volume to filter relationships</li>
+                            <li>Toggle labels on/off for cleaner view</li>
+                            <li>Reset zoom to return to original view</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+let svg, simulation, networkData;
+
+async function loadNetworkData() {
+    try {
+        const response = await fetch('/api/network');
+        networkData = await response.json();
+        
+        // Update stats
+        document.getElementById('nodeCount').textContent = networkData.stats.node_count;
+        document.getElementById('edgeCount').textContent = networkData.stats.edge_count;
+        document.getElementById('whaleCount').textContent = networkData.stats.whale_count;
+        
+        createNetworkGraph(networkData);
+        
+    } catch (error) {
+        console.error('Error loading network data:', error);
+        document.getElementById('networkGraph').innerHTML = 
+            '<div class="text-center p-5"><h5>Error loading network data</h5><p>Please check if there are transactions in the database.</p></div>';
+    }
+}
+
+function createNetworkGraph(data) {
+    // Clear previous graph
+    d3.select("#networkGraph").selectAll("*").remove();
+    
+    if (!data.nodes || data.nodes.length === 0) {
+        document.getElementById('networkGraph').innerHTML = 
+            '<div class="text-center p-5"><h5>No network data available</h5><p>Run whale discovery and import transactions to see the network graph.</p></div>';
+        return;
+    }
+    
+    const container = d3.select("#networkGraph");
+    const width = container.node().getBoundingClientRect().width;
+    const height = 700;
+    
+    // Create SVG
+    svg = container.append("svg")
+        .attr("width", width)
+        .attr("height", height);
+    
+    // Add zoom behavior
+    const zoom = d3.zoom()
+        .scaleExtent([0.1, 4])
+        .on("zoom", (event) => {
+            svg.select("g").attr("transform", event.transform);
+        });
+    
+    svg.call(zoom);
+    
+    // Create main group
+    const g = svg.append("g");
+    
+    // Create force simulation
+    simulation = d3.forceSimulation(data.nodes)
+        .force("link", d3.forceLink(data.edges).id(d => d.id).distance(150))
+        .force("charge", d3.forceManyBody().strength(-400))
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("collision", d3.forceCollide().radius(d => d.size + 5));
+    
+    // Create edges
+    const link = g.append("g")
+        .selectAll("line")
+        .data(data.edges)
+        .enter().append("line")
+        .attr("stroke", "#999")
+        .attr("stroke-opacity", 0.6)
+        .attr("stroke-width", d => d.width || 2);
+    
+    // Create nodes
+    const node = g.append("g")
+        .selectAll("circle")
+        .data(data.nodes)
+        .enter().append("circle")
+        .attr("r", d => d.size || 10)
+        .attr("fill", d => {
+            switch(d.type) {
+                case 'whale': return '#4ecdc4';
+                case 'exchange': return '#f39c12';
+                case 'protocol': return '#9b59b6';
+                default: return '#95a5a6';
+            }
+        })
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 2)
+        .style("cursor", "pointer")
+        .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended));
+    
+    // Add labels (initially visible)
+    const label = g.append("g")
+        .selectAll("text")
+        .data(data.nodes)
+        .enter().append("text")
+        .text(d => d.label)
+        .attr("font-size", "10px")
+        .attr("font-family", "Arial")
+        .attr("fill", "#333")
+        .attr("text-anchor", "middle")
+        .attr("dy", ".35em")
+        .style("pointer-events", "none")
+        .attr("id", "labels");
+    
+    // Add tooltips
+    node.append("title")
+        .text(d => `${d.label}\nAddress: ${d.id}\nType: ${d.type}\nExchange: ${d.exchange}\nChain: ${d.chain}\nScore: ${d.score}\nVolume: $${d.volume.toLocaleString()}`);
+    
+    // Click handler for nodes
+    node.on("click", (event, d) => {
+        if (d.type === 'whale') {
+            window.location.href = `/whale/${d.id}`;
+        }
+    });
+    
+    // Update positions
+    simulation.on("tick", () => {
+        link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+        
+        node
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y);
+        
+        label
+            .attr("x", d => d.x)
+            .attr("y", d => d.y + d.size + 15);
+    });
+}
+
+function dragstarted(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+}
+
+function dragged(event, d) {
+    d.fx = event.x;
+    d.fy = event.y;
+}
+
+function dragended(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+}
+
+function resetZoom() {
+    if (svg) {
+        svg.transition()
+            .duration(750)
+            .call(d3.zoom().transform, d3.zoomIdentity);
+    }
+}
+
+// Event handlers
+document.getElementById('showLabels').addEventListener('change', (e) => {
+    const labels = d3.selectAll('#labels text');
+    labels.style('display', e.target.checked ? 'block' : 'none');
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadNetworkData();
+});
+
+// Handle window resize
+window.addEventListener('resize', () => {
+    if (networkData) {
+        setTimeout(() => createNetworkGraph(networkData), 100);
+    }
+});
+</script>
+
+<style>
+#networkGraph {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+#networkStats .d-flex {
+    margin-bottom: 0.25rem;
+}
+</style>
+{% endblock %}

@@ -5,12 +5,14 @@ import os
 from datetime import datetime
 
 # ====== CONFIG ======
-ETHERSCAN_API_KEY = "YOUR_ETHERSCAN_API_KEY"
+ETHERSCAN_API_KEY = "UQBC8ZX5PYJPVI8KXZ92QA5D98P6Z1EI45"
 COINGECKO_API_BASE = "https://api.coingecko.com/api/v3"
 
 WALLETS = [
     "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",  # Bitfinex
     "0x28C6c06298d514Db089934071355E5743bf21d60",  # Binance
+    "0x365084b05fa7d5028346bd21d842ed0601bab5b8",  # Discovered whale 1
+    "0x70bf6634ee8cb27d04478f184b9b8bb13e5f4710",  # Discovered whale 2
 ]
 
 # Whale detection thresholds

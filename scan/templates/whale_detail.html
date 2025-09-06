@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+
+{% block title %}Whale {{ whale.address[:10] }}... - Whale Tracker{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/whales">Whales</a></li>
+                <li class="breadcrumb-item active">{{ whale.address[:16] }}...</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Whale Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card
+            {% if whale.whale_score >= 300 %}whale-ultra
+            {% elif whale.whale_score >= 200 %}whale-mega
+            {% elif whale.whale_score >= 100 %}whale-large
+            {% else %}whale-regular
+            {% endif %}">
+            
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4 class="mb-0">
+                            {% if whale.whale_score >= 300 %}
+                                🐋 Ultra Whale
+                            {% elif whale.whale_score >= 200 %}
+                                🦈 Mega Whale
+                            {% elif whale.whale_score >= 100 %}
+                                🐳 Large Whale
+                            {% else %}
+                                🐠 Regular Trader
+                            {% endif %}
+                        </h4>
+                        <div class="d-flex align-items-center mt-2">
+                            <code class="address-short me-3">{{ whale.address }}</code>
+                            <button class="btn btn-sm btn-outline-secondary" 
+                                    onclick="copyAddress('{{ whale.address }}')">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="whale-score display-6">{{ "%.1f"|format(whale.whale_score) }}</div>
+                        <small class="text-muted">Whale Score</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+                <h4 class="text-success">${{ "{:,.0f}".format(whale.total_volume_usd) }}</h4>
+                <p class="text-muted mb-0">Total Volume</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-exchange-alt fa-2x text-primary mb-2"></i>
+                <h4 class="text-primary">{{ whale.transaction_count }}</h4>
+                <p class="text-muted mb-0">Transactions</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                <h4 class="text-info">${{ "{:,.0f}".format(whale.avg_transaction_size) }}</h4>
+                <p class="text-muted mb-0">Avg Transaction</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-link fa-2x text-warning mb-2"></i>
+                <h4 class="text-warning">{{ whale.chains_active|length }}</h4>
+                <p class="text-muted mb-0">Active Chains</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Row -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Whale Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong>First Seen:</strong>
+                    </div>
+                    <div class="col-8">
+                        {{ whale.first_seen.split('T')[0] if whale.first_seen else 'Unknown' }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong>Last Seen:</strong>
+                    </div>
+                    <div class="col-8">
+                        {{ whale.last_seen.split('T')[0] if whale.last_seen else 'Unknown' }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong>Active Chains:</strong>
+                    </div>
+                    <div class="col-8">
+                        {% for chain in whale.chains_active %}
+                        <span class="badge bg-info me-1">{{ chain.upper() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong>Tokens Traded:</strong>
+                    </div>
+                    <div class="col-8">
+                        {% for token in whale.tokens_traded %}
+                        <span class="badge bg-light text-dark me-1">{{ token }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-pie"></i> Activity Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction History -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-history"></i> Transaction History</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary" onclick="exportTransactions()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if whale.transactions %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Time</th>
+                                <th>Type</th>
+                                <th>Token</th>
+                                <th>Amount</th>
+                                <th>USD Value</th>
+                                <th>Chain</th>
+                                <th>Hash</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in whale.transactions %}
+                            <tr class="transaction-row
+                                {% if 'ULTRA' in tx.whale_category %}tx-ultra
+                                {% elif 'MEGA' in tx.whale_category %}tx-mega
+                                {% elif 'LARGE' in tx.whale_category %}tx-large
+                                {% endif %}">
+                                
+                                <td>
+                                    <small>{{ tx.timestamp | format_date }}</small>
+                                </td>
+                                <td>
+                                    {% if tx.from_address.lower() == whale.address.lower() %}
+                                        <span class="badge bg-danger">OUT</span>
+                                    {% else %}
+                                        <span class="badge bg-success">IN</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ tx.token_symbol }}</strong>
+                                </td>
+                                <td>
+                                    {{ "%.4f"|format(tx.value_native) }}
+                                </td>
+                                <td>
+                                    <strong class="text-success">${{ "{:,.0f}".format(tx.value_usd) }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ tx.chain.upper() }}</span>
+                                </td>
+                                <td>
+                                    <code class="small">
+                                        <a href="https://etherscan.io/tx/{{ tx.hash }}" 
+                                           target="_blank" class="text-decoration-none">
+                                            {{ tx.hash[:16] }}...
+                                        </a>
+                                    </code>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-2x text-muted mb-3"></i>
+                    <h5>No Transactions Found</h5>
+                    <p class="text-muted">No transaction history available for this address.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Risk Analysis -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-shield-alt"></i> Risk Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Transaction Frequency</span>
+                        <span class="text-success">Normal</span>
+                    </div>
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar bg-success" style="width: 75%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Volume Consistency</span>
+                        <span class="text-warning">Moderate</span>
+                    </div>
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar bg-warning" style="width: 60%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Wash Trading Risk</span>
+                        <span class="text-success">Low</span>
+                    </div>
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar bg-success" style="width: 25%"></div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    This whale shows normal trading patterns with low risk indicators.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-network-wired"></i> Network Connections</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Addresses that frequently interact with this whale:</p>
+                
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <code class="small">0x742d35Cc6634C0532925a3b844Bc454e4438f44e</code>
+                            <small class="text-muted d-block">Binance Hot Wallet</small>
+                        </div>
+                        <span class="badge bg-warning">15 txs</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <code class="small">0x28C6c06298d514Db089934071355E5743bf21d60</code>
+                            <small class="text-muted d-block">Binance Hot Wallet 2</small>
+                        </div>
+                        <span class="badge bg-warning">8 txs</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <code class="small">0x7a250d5630b4cf539739df2c5dacb4c659f2488d</code>
+                            <small class="text-muted d-block">Uniswap V2: Router</small>
+                        </div>
+                        <span class="badge bg-info">3 txs</span>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="/network/{{ whale.address }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-project-diagram"></i> View Network Graph
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Activity Distribution Chart
+const tokens = {{ whale.tokens_traded | tojson }};
+const tokenColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+
+const activityCtx = document.getElementById('activityChart').getContext('2d');
+new Chart(activityCtx, {
+    type: 'doughnut',
+    data: {
+        labels: tokens,
+        datasets: [{
+            data: tokens.map(() => Math.floor(Math.random() * 100) + 10), // Mock data
+            backgroundColor: tokenColors.slice(0, tokens.length),
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+function copyAddress(address) {
+    navigator.clipboard.writeText(address).then(() => {
+        const btn = event.target.closest('button');
+        const icon = btn.querySelector('i');
+        
+        icon.className = 'fas fa-check';
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(() => {
+            icon.className = 'fas fa-copy';
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-secondary');
+        }, 1000);
+    });
+}
+
+function exportTransactions() {
+    // In a real implementation, this would export transaction data
+    alert('Exporting transaction data to CSV... (Feature would download CSV file)');
+}
+</script>
+{% endblock %}

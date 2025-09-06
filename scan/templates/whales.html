@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Whales - Whale Tracker{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="fas fa-fish"></i> Whale Directory</h1>
+        <p class="text-muted">Comprehensive list of detected crypto whales</p>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" class="form-control" id="searchWhales" placeholder="Search by address...">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="whaleFilter" id="filterAll" checked>
+            <label class="btn btn-outline-primary" for="filterAll">All Whales</label>
+            
+            <input type="radio" class="btn-check" name="whaleFilter" id="filterUltra">
+            <label class="btn btn-outline-danger" for="filterUltra">🐋 Ultra</label>
+            
+            <input type="radio" class="btn-check" name="whaleFilter" id="filterMega">
+            <label class="btn btn-outline-warning" for="filterMega">🦈 Mega</label>
+            
+            <input type="radio" class="btn-check" name="whaleFilter" id="filterLarge">
+            <label class="btn btn-outline-success" for="filterLarge">🐳 Large</label>
+        </div>
+    </div>
+</div>
+
+<!-- Whales Grid -->
+<div class="row" id="whalesContainer">
+    {% for whale in whales %}
+    <div class="col-lg-6 col-xl-4 mb-4 whale-item" 
+         data-score="{{ whale.whale_score }}" 
+         data-address="{{ whale.address|lower }}">
+        <div class="card whale-card h-100
+            {% if whale.whale_score >= 300 %}whale-ultra
+            {% elif whale.whale_score >= 200 %}whale-mega
+            {% elif whale.whale_score >= 100 %}whale-large
+            {% else %}whale-regular
+            {% endif %}">
+            
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    {% if whale.whale_score >= 300 %}
+                        <span class="badge bg-danger">🐋 Ultra Whale</span>
+                    {% elif whale.whale_score >= 200 %}
+                        <span class="badge bg-warning">🦈 Mega Whale</span>
+                    {% elif whale.whale_score >= 100 %}
+                        <span class="badge bg-success">🐳 Large Whale</span>
+                    {% else %}
+                        <span class="badge bg-secondary">🐠 Regular</span>
+                    {% endif %}
+                </div>
+                <div class="whale-score">{{ "%.1f"|format(whale.whale_score) }}</div>
+            </div>
+            
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label small text-muted">ADDRESS</label>
+                    <div class="d-flex align-items-center">
+                        <code class="address-short flex-grow-1">{{ whale.address }}</code>
+                        <button class="btn btn-sm btn-outline-secondary ms-2" 
+                                onclick="copyAddress('{{ whale.address }}')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label class="form-label small text-muted">TOTAL VOLUME</label>
+                        <div class="fw-bold text-success">
+                            ${{ "{:,.0f}".format(whale.total_volume_usd) }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small text-muted">TRANSACTIONS</label>
+                        <div class="fw-bold">
+                            {{ whale.transaction_count }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label class="form-label small text-muted">AVG TRANSACTION SIZE</label>
+                        <div class="fw-bold text-primary">
+                            ${{ "{:,.0f}".format(whale.avg_transaction_size) }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small text-muted">ACTIVE CHAINS</label>
+                    <div>
+                        {% for chain in whale.chains_active %}
+                        <span class="badge bg-info me-1">{{ chain.upper() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small text-muted">TOKENS TRADED</label>
+                    <div>
+                        {% for token in whale.tokens_traded[:3] %}
+                        <span class="badge bg-light text-dark me-1">{{ token }}</span>
+                        {% endfor %}
+                        {% if whale.tokens_traded|length > 3 %}
+                        <span class="badge bg-light text-dark">+{{ whale.tokens_traded|length - 3 }} more</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if whale.first_seen %}
+                <div class="text-muted small">
+                    <i class="fas fa-clock"></i> 
+                    First seen: {{ whale.first_seen.split('T')[0] if whale.first_seen else 'Unknown' }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="/whale/{{ whale.address }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    <div class="text-muted small">
+                        <i class="fas fa-star"></i> Score: {{ "%.1f"|format(whale.whale_score) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not whales %}
+<div class="text-center py-5">
+    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+    <h4>No Whales Found</h4>
+    <p class="text-muted">
+        No whale addresses have been discovered yet. 
+        <a href="/">Run whale discovery</a> to find high-volume traders.
+    </p>
+</div>
+{% endif %}
+
+<!-- Load More Button -->
+{% if whales|length >= 20 %}
+<div class="text-center mt-4">
+    <button class="btn btn-outline-primary" onclick="loadMoreWhales()">
+        <i class="fas fa-arrow-down"></i> Load More Whales
+    </button>
+</div>
+{% endif %}
+
+<!-- Whale Stats Summary -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar"></i> Whale Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h4 class="text-danger">{{ whales | selectattr('whale_score', 'ge', 300) | list | length }}</h4>
+                        <p class="text-muted">Ultra Whales</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-warning">{{ whales | selectattr('whale_score', 'ge', 200) | selectattr('whale_score', 'lt', 300) | list | length }}</h4>
+                        <p class="text-muted">Mega Whales</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-success">{{ whales | selectattr('whale_score', 'ge', 100) | selectattr('whale_score', 'lt', 200) | list | length }}</h4>
+                        <p class="text-muted">Large Whales</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-info">{{ (whales | map(attribute='total_volume_usd') | sum / 1000000) | round(1) }}M</h4>
+                        <p class="text-muted">Total Volume (USD)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Search functionality
+document.getElementById('searchWhales').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    filterWhales();
+});
+
+// Filter functionality
+document.querySelectorAll('input[name="whaleFilter"]').forEach(radio => {
+    radio.addEventListener('change', filterWhales);
+});
+
+function filterWhales() {
+    const searchTerm = document.getElementById('searchWhales').value.toLowerCase();
+    const selectedFilter = document.querySelector('input[name="whaleFilter"]:checked').id;
+    const whaleItems = document.querySelectorAll('.whale-item');
+    
+    whaleItems.forEach(item => {
+        const address = item.dataset.address;
+        const score = parseFloat(item.dataset.score);
+        
+        // Check search term
+        const matchesSearch = address.includes(searchTerm);
+        
+        // Check filter
+        let matchesFilter = true;
+        switch(selectedFilter) {
+            case 'filterUltra':
+                matchesFilter = score >= 300;
+                break;
+            case 'filterMega':
+                matchesFilter = score >= 200 && score < 300;
+                break;
+            case 'filterLarge':
+                matchesFilter = score >= 100 && score < 200;
+                break;
+            default:
+                matchesFilter = true;
+        }
+        
+        if (matchesSearch && matchesFilter) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Update results count
+    const visibleItems = document.querySelectorAll('.whale-item[style="display: block;"], .whale-item:not([style])').length;
+    console.log(`Showing ${visibleItems} whales`);
+}
+
+function loadMoreWhales() {
+    // In a real implementation, this would load more data via AJAX
+    alert('Loading more whales... (Feature would load next page of results)');
+}
+
+function copyAddress(address) {
+    navigator.clipboard.writeText(address).then(() => {
+        // Show success feedback
+        const event = window.event;
+        const btn = event.target.closest('button');
+        const icon = btn.querySelector('i');
+        
+        icon.className = 'fas fa-check';
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(() => {
+            icon.className = 'fas fa-copy';
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-secondary');
+        }, 1000);
+    });
+}
+
+// Initialize filters
+document.addEventListener('DOMContentLoaded', function() {
+    filterWhales();
+});
+</script>
+{% endblock %}

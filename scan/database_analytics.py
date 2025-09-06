@@ -47,14 +47,16 @@ class WhaleDatabase:
                     whale_category TEXT NOT NULL,
                     gas_used INTEGER,
                     gas_price INTEGER,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    INDEX(from_address),
-                    INDEX(to_address),
-                    INDEX(timestamp),
-                    INDEX(value_usd),
-                    INDEX(chain)
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
+            
+            # Create indexes
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_from_address ON transactions(from_address)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_to_address ON transactions(to_address)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_timestamp ON transactions(timestamp)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_value_usd ON transactions(value_usd)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_chain ON transactions(chain)')
             
             # Whale addresses table with analytics
             cursor.execute('''

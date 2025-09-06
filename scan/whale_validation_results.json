@@ -1,0 +1,12 @@
+{
+  "validation_date": "2025-09-04T20:37:22.461171",
+  "legitimate_whales": [
+    "0x3a43aec53490cb9fa922847385d82fe25d0e9de7",
+    "0x0a2b94f6871c1d7a32fe58e1ab5e6dea2f114e56",
+    "0x8d90113a1e286a5ab3e496fbd1853f265e5913c6",
+    "0x52aa899454998be5b000ad077a46bbe360f4e497",
+    "0x365084b05fa7d5028346bd21d842ed0601bab5b8"
+  ],
+  "suspicious_whales": [],
+  "validation_rate": 1.0
+}

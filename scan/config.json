@@ -1,0 +1,27 @@
+{
+  "whale_thresholds": {
+    "large": 100000,
+    "mega": 500000,
+    "ultra": 1000000
+  },
+  "api_keys": {
+    "etherscan": "UQBC8ZX5PYJPVI8KXZ92QA5D98P6Z1EI45",
+    "polygonscan": "XHEHMIUUAJP53J4DP8K2WE8ZFQ6JZYKPVB",
+    "bscscan": "F8UCPQXPH97DI32FW3UT5IAF3XC9UBZ18R",
+    "arbiscan": "YOUR_ARBISCAN_API_KEY",
+    "optimism": "YOUR_OPTIMISM_API_KEY"
+  },
+  "telegram": {
+    "token": "YOUR_TELEGRAM_BOT_TOKEN",
+    "chat_id": "YOUR_CHAT_ID"
+  },
+  "monitoring": {
+    "interval_minutes": 30,
+    "enable_notifications": true
+  },
+  "known_whales": [
+    "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+    "0x28C6c06298d514Db089934071355E5743bf21d60",
+    "0x8484Ef722627bf18ca5Ae6BcF031c23E6e922B30"
+  ]
+}

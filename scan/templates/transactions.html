@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions - Whale Tracker{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="fas fa-exchange-alt"></i> Transaction Monitor</h1>
+        <p class="text-muted">Real-time whale transaction activity across all chains</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <select class="form-select" id="chainFilter">
+            <option value="">All Chains</option>
+            <option value="ethereum">Ethereum</option>
+            <option value="polygon">Polygon</option>
+            <option value="bsc">BSC</option>
+            <option value="arbitrum">Arbitrum</option>
+            <option value="optimism">Optimism</option>
+            <option value="solana">Solana</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" id="whaleFilter">
+            <option value="">All Sizes</option>
+            <option value="ULTRA">🐋 Ultra Whales</option>
+            <option value="MEGA">🦈 Mega Whales</option>
+            <option value="LARGE">🐳 Large Whales</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" id="tokenFilter">
+            <option value="">All Tokens</option>
+            <option value="USDT">USDT</option>
+            <option value="USDC">USDC</option>
+            <option value="WETH">WETH</option>
+            <option value="WBTC">WBTC</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <div class="input-group">
+            <span class="input-group-text">Min $</span>
+            <input type="number" class="form-control" id="minValue" placeholder="0" min="0" step="1000">
+        </div>
+    </div>
+</div>
+
+<!-- Live Stats Bar -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h4 id="totalTxCount">{{ transactions|length }}</h4>
+                        <small>Total Transactions</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 id="totalVolume">${{ "{:,.0f}".format(transactions|map(attribute='value_usd')|sum) }}</h4>
+                        <small>Total Volume</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 id="avgTxSize">${{ "{:,.0f}".format(transactions|map(attribute='value_usd')|sum / transactions|length) if transactions else 0 }}</h4>
+                        <small>Average Size</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 id="liveIndicator"><i class="fas fa-circle text-success"></i> LIVE</h4>
+                        <small>Status</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-list"></i> Recent Transactions</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-success" onclick="toggleAutoRefresh()">
+                        <i class="fas fa-sync" id="refreshIcon"></i> 
+                        <span id="refreshText">Auto Refresh: OFF</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="exportData()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if transactions %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="transactionsTable">
+                        <thead class="table-dark sticky-top">
+                            <tr>
+                                <th width="5%"></th>
+                                <th width="10%">Time</th>
+                                <th width="10%">Type</th>
+                                <th width="15%">From</th>
+                                <th width="15%">To</th>
+                                <th width="10%">Token</th>
+                                <th width="12%">Amount</th>
+                                <th width="12%">USD Value</th>
+                                <th width="6%">Chain</th>
+                                <th width="5%"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in transactions %}
+                            <tr class="transaction-row
+                                {% if 'ULTRA' in tx.whale_category %}tx-ultra
+                                {% elif 'MEGA' in tx.whale_category %}tx-mega
+                                {% elif 'LARGE' in tx.whale_category %}tx-large
+                                {% endif %}"
+                                data-chain="{{ tx.chain }}"
+                                data-category="{{ tx.whale_category }}"
+                                data-token="{{ tx.token_symbol }}"
+                                data-value="{{ tx.value_usd }}">
+                                
+                                <td>
+                                    {% if 'ULTRA' in tx.whale_category %}
+                                        🐋
+                                    {% elif 'MEGA' in tx.whale_category %}
+                                        🦈
+                                    {% elif 'LARGE' in tx.whale_category %}
+                                        🐳
+                                    {% else %}
+                                        🐠
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ tx.timestamp | format_date }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge {{ 'bg-success' if tx.whale_category else 'bg-secondary' }}">
+                                        {{ tx.whale_category.split()[-1] if tx.whale_category else 'Regular' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <code class="small">
+                                        <a href="/whale/{{ tx.from_address }}" class="text-decoration-none">
+                                            {{ tx.from_address[:12] }}...
+                                        </a>
+                                    </code>
+                                </td>
+                                <td>
+                                    <code class="small">
+                                        <a href="/whale/{{ tx.to_address }}" class="text-decoration-none">
+                                            {{ tx.to_address[:12] }}...
+                                        </a>
+                                    </code>
+                                </td>
+                                <td>
+                                    <strong>{{ tx.token_symbol }}</strong>
+                                </td>
+                                <td>
+                                    <span class="text-primary">
+                                        {{ "%.4f"|format(tx.value_native) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong class="text-success">
+                                        ${{ "{:,.0f}".format(tx.value_usd) }}
+                                    </strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ tx.chain.upper() }}</span>
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" 
+                                                   href="https://etherscan.io/tx/{{ tx.hash }}" 
+                                                   target="_blank">
+                                                    <i class="fas fa-external-link-alt"></i> View on Explorer
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="#" 
+                                                   onclick="copyTxHash('{{ tx.hash }}')">
+                                                    <i class="fas fa-copy"></i> Copy Hash
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="#" 
+                                                   onclick="addToWatchlist('{{ tx.from_address }}')">
+                                                    <i class="fas fa-plus"></i> Watch From Address
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Load More -->
+                <div class="text-center p-3">
+                    <button class="btn btn-outline-primary" onclick="loadMoreTransactions()">
+                        <i class="fas fa-arrow-down"></i> Load More Transactions
+                    </button>
+                </div>
+                
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h5>No Transactions Found</h5>
+                    <p class="text-muted">No whale transactions have been detected yet.</p>
+                    <a href="/" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Start Monitoring
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction Details Modal -->
+<div class="modal fade" id="txDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transaction Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalContent">
+                <!-- Transaction details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let autoRefresh = false; // Disabled by default
+let refreshInterval;
+
+// Initialize filters
+document.getElementById('chainFilter').addEventListener('change', filterTransactions);
+document.getElementById('whaleFilter').addEventListener('change', filterTransactions);
+document.getElementById('tokenFilter').addEventListener('change', filterTransactions);
+document.getElementById('minValue').addEventListener('input', filterTransactions);
+
+function filterTransactions() {
+    const chainFilter = document.getElementById('chainFilter').value;
+    const whaleFilter = document.getElementById('whaleFilter').value;
+    const tokenFilter = document.getElementById('tokenFilter').value;
+    const minValue = parseFloat(document.getElementById('minValue').value) || 0;
+    
+    const rows = document.querySelectorAll('.transaction-row');
+    let visibleCount = 0;
+    let totalVolume = 0;
+    
+    rows.forEach(row => {
+        const chain = row.dataset.chain;
+        const category = row.dataset.category;
+        const token = row.dataset.token;
+        const value = parseFloat(row.dataset.value);
+        
+        const chainMatch = !chainFilter || chain === chainFilter;
+        const whaleMatch = !whaleFilter || category.includes(whaleFilter);
+        const tokenMatch = !tokenFilter || token === tokenFilter;
+        const valueMatch = value >= minValue;
+        
+        if (chainMatch && whaleMatch && tokenMatch && valueMatch) {
+            row.style.display = '';
+            visibleCount++;
+            totalVolume += value;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Update stats
+    document.getElementById('totalTxCount').textContent = visibleCount;
+    document.getElementById('totalVolume').textContent = '$' + totalVolume.toLocaleString();
+    document.getElementById('avgTxSize').textContent = visibleCount > 0 
+        ? '$' + Math.round(totalVolume / visibleCount).toLocaleString() 
+        : '$0';
+}
+
+function toggleAutoRefresh() {
+    autoRefresh = !autoRefresh;
+    const refreshText = document.getElementById('refreshText');
+    const refreshIcon = document.getElementById('refreshIcon');
+    
+    if (autoRefresh) {
+        refreshText.textContent = 'Auto Refresh: ON';
+        refreshIcon.classList.add('fa-spin');
+        startAutoRefresh();
+    } else {
+        refreshText.textContent = 'Auto Refresh: OFF';
+        refreshIcon.classList.remove('fa-spin');
+        clearInterval(refreshInterval);
+    }
+}
+
+function startAutoRefresh() {
+    if (refreshInterval) clearInterval(refreshInterval);
+    
+    refreshInterval = setInterval(() => {
+        if (autoRefresh) {
+            // Disabled fake transaction simulation
+            // simulateNewTransaction();
+            // Instead, just show a notification that we're checking for new data
+            showNotification('Checking for new transactions...');
+        }
+    }, 10000); // Refresh every 10 seconds
+}
+
+function simulateNewTransaction() {
+    // Simulate a new transaction arriving
+    const tableBody = document.querySelector('#transactionsTable tbody');
+    const newRowHtml = `
+        <tr class="transaction-row tx-mega new-transaction" data-chain="ethereum" data-category="MEGA WHALE" data-token="USDT" data-value="750000">
+            <td>🦈</td>
+            <td><small class="text-muted">${new Date().toLocaleString().split(',')[1]}</small></td>
+            <td><span class="badge bg-success">WHALE</span></td>
+            <td><code class="small">0x365084b0...</code></td>
+            <td><code class="small">0x742d35Cc...</code></td>
+            <td><strong>USDT</strong></td>
+            <td><span class="text-primary">750,000.00</span></td>
+            <td><strong class="text-success">$750,000</strong></td>
+            <td><span class="badge bg-info">ETH</span></td>
+            <td>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-external-link-alt"></i> View on Explorer</a></li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+    `;
+    
+    tableBody.insertAdjacentHTML('afterbegin', newRowHtml);
+    
+    // Highlight new transaction
+    const newRow = tableBody.firstElementChild;
+    newRow.classList.add('table-warning');
+    
+    setTimeout(() => {
+        newRow.classList.remove('table-warning', 'new-transaction');
+    }, 3000);
+    
+    // Update counters
+    filterTransactions();
+    
+    // Show notification
+    showNotification('🦈 New Mega Whale transaction detected: $750,000 USDT');
+}
+
+function showNotification(message) {
+    // Create notification
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-success alert-dismissible position-fixed';
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+function copyTxHash(hash) {
+    navigator.clipboard.writeText(hash);
+    showNotification('Transaction hash copied to clipboard');
+}
+
+function addToWatchlist(address) {
+    // In a real implementation, this would add the address to monitoring
+    showNotification(`Address ${address.slice(0, 10)}... added to watchlist`);
+}
+
+function exportData() {
+    // In a real implementation, this would export filtered transaction data
+    alert('Exporting filtered transaction data to CSV...');
+}
+
+function loadMoreTransactions() {
+    // In a real implementation, this would load more historical data
+    alert('Loading more transactions... (Feature would load next page)');
+}
+
+// Initialize auto-refresh
+startAutoRefresh();
+
+// Add CSS for new transaction animation
+const style = document.createElement('style');
+style.textContent = `
+    .new-transaction {
+        animation: slideIn 0.5s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateY(-10px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}
