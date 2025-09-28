@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}Profitable Traders - Whale Tracker{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item active">Profitable Traders</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-gradient-success text-white">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Profitable Traders
+                        </h2>
+                        <p class="mb-0 mt-2 opacity-75">
+                            Elite traders with consistent profitability and >$100K volumes
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="display-6">{{ traders|length }}</div>
+                        <small>Profitable Traders</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                <h4 class="text-warning">{{ (traders | selectattr('tier', 'equalto', 'ELITE') | list | length) }}</h4>
+                <p class="text-muted mb-0">Elite Traders</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+                <h4 class="text-success">${{ "{:,.0f}".format((traders | sum(attribute='metrics.total_profit', start=0))) }}</h4>
+                <p class="text-muted mb-0">Total Profits</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-percentage fa-2x text-info mb-2"></i>
+                {% set avg_win_rate = ((traders | sum(attribute='metrics.win_rate', start=0)) / (traders | length) * 100) if traders else 0 %}
+                <h4 class="text-info">{{ "%.1f"|format(avg_win_rate) }}%</h4>
+                <p class="text-muted mb-0">Avg Win Rate</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-exchange-alt fa-2x text-primary mb-2"></i>
+                <h4 class="text-primary">{{ (traders | sum(attribute='session_count', start=0)) }}</h4>
+                <p class="text-muted mb-0">Trading Sessions</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Traders List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list"></i> Top Profitable Traders</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if traders %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Rank</th>
+                                <th>Address</th>
+                                <th>Tier</th>
+                                <th>Score</th>
+                                <th>Win Rate</th>
+                                <th>Total Profit</th>
+                                <th>Sessions</th>
+                                <th>Strategy</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trader in traders %}
+                            <tr class="trader-row
+                                {% if trader.tier == 'ELITE' %}bg-light
+                                {% elif trader.tier == 'ADVANCED' %}
+                                {% endif %}">
+                                
+                                <td>
+                                    <strong class="text-primary">#{{ loop.index }}</strong>
+                                </td>
+                                
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div>
+                                            <code class="small">{{ trader.wallet_address[:16] }}...</code>
+                                            <div class="small text-muted">
+                                                {% if trader.tier == 'ELITE' %}
+                                                    <i class="fas fa-crown text-warning"></i> Elite Trader
+                                                {% elif trader.tier == 'ADVANCED' %}
+                                                    <i class="fas fa-star text-info"></i> Advanced
+                                                {% elif trader.tier == 'PROFICIENT' %}
+                                                    <i class="fas fa-check text-success"></i> Proficient
+                                                {% else %}
+                                                    <i class="fas fa-seedling text-secondary"></i> Emerging
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                
+                                <td>
+                                    <span class="badge 
+                                        {% if trader.tier == 'ELITE' %}bg-warning
+                                        {% elif trader.tier == 'ADVANCED' %}bg-info
+                                        {% elif trader.tier == 'PROFICIENT' %}bg-success
+                                        {% else %}bg-secondary
+                                        {% endif %}">
+                                        {{ trader.tier }}
+                                    </span>
+                                </td>
+                                
+                                <td>
+                                    <strong class="text-success">{{ "%.1f"|format(trader.profitability_score) }}</strong>
+                                    <div class="progress" style="height: 4px;">
+                                        <div class="progress-bar bg-success" style="width: {{ (trader.profitability_score / 10)|round }}%"></div>
+                                    </div>
+                                </td>
+                                
+                                <td>
+                                    <strong class="
+                                        {% if trader.metrics.win_rate >= 0.8 %}text-success
+                                        {% elif trader.metrics.win_rate >= 0.6 %}text-warning
+                                        {% else %}text-danger
+                                        {% endif %}">
+                                        {{ "%.1f"|format(trader.metrics.win_rate * 100) }}%
+                                    </strong>
+                                </td>
+                                
+                                <td>
+                                    <strong class="text-success">${{ "{:,.0f}".format(trader.metrics.total_profit) }}</strong>
+                                    <div class="small text-muted">
+                                        ${{ "{:,.0f}".format(trader.metrics.avg_profit_per_trade) }} avg
+                                    </div>
+                                </td>
+                                
+                                <td>
+                                    <span class="badge bg-primary">{{ trader.session_count }}</span>
+                                </td>
+                                
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        {% if trader.pattern.primary_strategy == 'DIP_BUYER' %}
+                                            <i class="fas fa-arrow-down"></i> Dip Buyer
+                                        {% elif trader.pattern.primary_strategy == 'SWING_TRADER' %}
+                                            <i class="fas fa-wave-square"></i> Swing
+                                        {% elif trader.pattern.primary_strategy == 'DAY_TRADER' %}
+                                            <i class="fas fa-clock"></i> Day
+                                        {% else %}
+                                            {{ trader.pattern.primary_strategy }}
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="/profitable-trader/{{ trader.wallet_address }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        <a href="/whale/{{ trader.wallet_address }}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-whale"></i> Whale
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-2x text-muted mb-3"></i>
+                    <h5>No Profitable Traders Found</h5>
+                    <p class="text-muted">No traders meet the profitability criteria yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Strategy Distribution Chart -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-pie"></i> Strategy Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="strategyChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar"></i> Tier Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="tierChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Strategy Distribution Chart
+const strategies = {{ (traders | map(attribute='pattern.primary_strategy') | list) | tojson }};
+const strategyCounts = {};
+strategies.forEach(strategy => {
+    strategyCounts[strategy] = (strategyCounts[strategy] || 0) + 1;
+});
+
+const strategyCtx = document.getElementById('strategyChart').getContext('2d');
+new Chart(strategyCtx, {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(strategyCounts),
+        datasets: [{
+            data: Object.values(strategyCounts),
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Tier Distribution Chart
+const tiers = {{ (traders | map(attribute='tier') | list) | tojson }};
+const tierCounts = {};
+tiers.forEach(tier => {
+    tierCounts[tier] = (tierCounts[tier] || 0) + 1;
+});
+
+const tierCtx = document.getElementById('tierChart').getContext('2d');
+new Chart(tierCtx, {
+    type: 'bar',
+    data: {
+        labels: Object.keys(tierCounts),
+        datasets: [{
+            label: 'Number of Traders',
+            data: Object.values(tierCounts),
+            backgroundColor: '#36A2EB',
+            borderColor: '#36A2EB',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

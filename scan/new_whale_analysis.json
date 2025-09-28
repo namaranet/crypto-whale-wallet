@@ -1,0 +1,62 @@
+{
+  "analyzed_at": "2025-09-07T12:07:02.877401",
+  "new_addresses_count": 7,
+  "results": [
+    {
+      "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+      "chain": "ethereum",
+      "balance": 153977.8128688082,
+      "balance_usd": 369546750.88513964,
+      "recent_transactions": 10,
+      "analysis_time": "2025-09-07T12:06:51.119633"
+    },
+    {
+      "address": "0x28C6c06298d514Db089934071355E5743bf21d60",
+      "chain": "ethereum",
+      "balance": 60429.95736351261,
+      "balance_usd": 145031897.67243025,
+      "recent_transactions": 10,
+      "analysis_time": "2025-09-07T12:06:53.254309"
+    },
+    {
+      "address": "0x8484Ef722627bf18ca5Ae6BcF031c23E6e922B30",
+      "chain": "ethereum",
+      "balance": 115069.14420218792,
+      "balance_usd": 276165946.08525103,
+      "recent_transactions": 10,
+      "analysis_time": "2025-09-07T12:06:55.225200"
+    },
+    {
+      "address": "0x15b325660a1C4a9582a7d834C31119C0CB9e3A42",
+      "chain": "ethereum",
+      "balance": 0.1295887395475373,
+      "balance_usd": 311.0129749140895,
+      "recent_transactions": 10,
+      "analysis_time": "2025-09-07T12:06:57.217582"
+    },
+    {
+      "address": "EGboTiF5aJL31BBHSjq2UoJw6nUFgsDnvahsh2efJHAF",
+      "chain": "solana",
+      "balance": 0.0,
+      "balance_usd": 0.0,
+      "recent_transactions": 10,
+      "analysis_time": "2025-09-07T12:06:58.636499"
+    },
+    {
+      "address": "DJnHztNmw1H56uYm98PNu5eVZ5yhi9482rZ9zA22TUUz",
+      "chain": "solana",
+      "balance": 14.067388242,
+      "balance_usd": 1969.43435388,
+      "recent_transactions": 10,
+      "analysis_time": "2025-09-07T12:06:59.933361"
+    },
+    {
+      "address": "0x20e85118f45e08a2ddb9540ca30e703eee150299",
+      "chain": "ethereum",
+      "balance": 1.1115173405564023,
+      "balance_usd": 2667.6416173353655,
+      "recent_transactions": 10,
+      "analysis_time": "2025-09-07T12:07:01.876959"
+    }
+  ]
+}

@@ -179,17 +179,32 @@ KNOWN_ADDRESSES = {
 
 def get_address_info(address):
     """Get information about an address"""
+    original_address = address
     address = address.lower()
     
     if address in KNOWN_ADDRESSES:
         return KNOWN_ADDRESSES[address]
     
+    # Detect chain by address format
+    if original_address.startswith('0x') and len(original_address) == 42:
+        # Ethereum/EVM address
+        chain = "ethereum"
+        label = f"{original_address[:10]}..."
+    elif len(original_address) > 30 and not original_address.startswith('0x'):
+        # Likely Solana address
+        chain = "solana"
+        label = f"{original_address[:8]}...{original_address[-8:]}"
+    else:
+        # Default
+        chain = "ethereum"
+        label = f"{address[:10]}..."
+    
     # If not known, return basic info
     return {
-        "label": f"{address[:10]}...",
+        "label": label,
         "type": "unknown",
         "exchange": "Unknown",
-        "chain": "ethereum"  # Default to ethereum
+        "chain": chain
     }
 
 def is_exchange_address(address):

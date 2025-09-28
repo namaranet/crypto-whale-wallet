@@ -216,10 +216,17 @@
                                 </td>
                                 <td>
                                     <code class="small">
+                                        {% if tx.chain == 'solana' %}
+                                        <a href="https://solscan.io/tx/{{ tx.hash }}" 
+                                           target="_blank" class="text-decoration-none">
+                                            {{ tx.hash[:16] }}...
+                                        </a>
+                                        {% else %}
                                         <a href="https://etherscan.io/tx/{{ tx.hash }}" 
                                            target="_blank" class="text-decoration-none">
                                             {{ tx.hash[:16] }}...
                                         </a>
+                                        {% endif %}
                                     </code>
                                 </td>
                             </tr>
@@ -232,6 +239,14 @@
                     <i class="fas fa-search fa-2x text-muted mb-3"></i>
                     <h5>No Transactions Found</h5>
                     <p class="text-muted">No transaction history available for this address.</p>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            💡 Try viewing whales with transaction data:
+                            <a href="/whale/0x8a25d8c9fa8c7a726137f2d618d85cbc2c083f78" class="text-primary">0x8a25...83f78</a>, 
+                            <a href="/whale/0x5ee5bf7ae06d1be5997a1a72006fe6c607ec6de8" class="text-primary">0x5ee5...6de8</a>, or 
+                            <a href="/whale/0x637d231a2c854904a39d36f495686f97dead7374" class="text-primary">0x637d...7374</a>
+                        </small>
+                    </div>
                 </div>
                 {% endif %}
             </div>

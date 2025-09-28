@@ -380,19 +380,62 @@ class MultiChainWhaleTracker:
         return all_transactions
 
 # Example usage
+def load_whale_addresses_from_config():
+    """Load whale addresses from config.json"""
+    try:
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+            addresses = config.get('known_whales', [])
+            
+            # Clean up Solana URLs to extract just the address
+            cleaned_addresses = []
+            for addr in addresses:
+                if addr.startswith('https://solscan.io/account/'):
+                    # Extract Solana address from URL
+                    solana_addr = addr.split('/')[-1]
+                    cleaned_addresses.append(solana_addr)
+                else:
+                    cleaned_addresses.append(addr)
+            
+            return cleaned_addresses
+    except Exception as e:
+        print(f"⚠️  Could not load config.json: {e}")
+        # Fallback to discovered whales from database
+        return get_discovered_whale_addresses()
+
+def get_discovered_whale_addresses():
+    """Get discovered whale addresses from database as fallback"""
+    try:
+        import sqlite3
+        with sqlite3.connect('whale_tracker.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT address FROM whale_addresses ORDER BY whale_score DESC LIMIT 5')
+            return [row[0] for row in cursor.fetchall()]
+    except Exception as e:
+        print(f"⚠️  Could not load from database: {e}")
+        return []
+
 if __name__ == "__main__":
     tracker = MultiChainWhaleTracker()
     
-    # Example addresses (mix of EVM and Solana)
-    test_addresses = [
-        "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",  # Bitfinex ETH
-        "0x28C6c06298d514Db089934071355E5743bf21d60",  # Binance ETH
-        "EGboTiF5aJL31BBHSjq2UoJw6nUFgsDnvahsh2efJHAF"   # Solana example
-    ]
+    # Load whale addresses from config.json
+    whale_addresses = load_whale_addresses_from_config()
     
-    print("🚀 Starting Multi-Chain Whale Scanner...")
+    if not whale_addresses:
+        print("❌ No whale addresses found in config.json or database")
+        exit(1)
     
-    results = tracker.batch_scan_addresses(test_addresses)
+    print(f"🚀 Starting Multi-Chain Whale Scanner...")
+    print(f"🔍 Loaded {len(whale_addresses)} whale addresses from config")
+    
+    # Show which addresses we're scanning
+    for i, addr in enumerate(whale_addresses, 1):
+        if addr.startswith('0x'):
+            print(f"   {i}. {addr} (EVM)")
+        else:
+            print(f"   {i}. {addr} (Solana)")
+    
+    results = tracker.batch_scan_addresses(whale_addresses)
     transactions = tracker.save_multichain_results(results)
     
     # Summary

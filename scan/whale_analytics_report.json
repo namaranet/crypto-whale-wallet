@@ -1,0 +1,207 @@
+{
+  "generated_at": "2025-09-07T14:51:26.429498",
+  "wash_trading": [],
+  "coordinated_trading": [
+    {
+      "timestamp": "2025-09-05 21:00:00",
+      "token": "USDT",
+      "addresses_involved": [
+        "0x637d231a2c854904a39d36f495686f97dead7374",
+        "0x26bb75d92a3f3716b5044fb59e7d62d205336337",
+        "0xe74e899cd17f2c354f5a718cf7e4486ef7c24d3c",
+        "0x58b704065b7aff3ed351052f8560019e05925023",
+        "0xe74ee93c646b7694465d386a464406b59c824d3c"
+      ],
+      "transaction_count": 4,
+      "total_volume": 982177.3400000001,
+      "coordination_score": 22.935933948436297
+    },
+    {
+      "timestamp": "2025-09-05 21:10:00",
+      "token": "USDT",
+      "addresses_involved": [
+        "0xe74b109097fa2666a19119cce1c549b2ffc24d3c",
+        "0xe74e899cd17f2c354f5a718cf7e4486ef7c24d3c",
+        "0x637d231a2c854904a39d36f495686f97dead7374",
+        "0xe74ee93c646b7694465d386a464406b59c824d3c"
+      ],
+      "transaction_count": 3,
+      "total_volume": 615790.48,
+      "coordination_score": 16.48128673124824
+    },
+    {
+      "timestamp": "2025-09-05 21:50:00",
+      "token": "USDT",
+      "addresses_involved": [
+        "0xe74b109097fa2666a19119cce1c549b2ffc24d3c",
+        "0xe74e2cfb55da3e8fe9c01767dde2c3b0704f0d3c",
+        "0xe74e49de0589e5939f7e0a096f2f4be1a8650d3c",
+        "0x637d231a2c854904a39d36f495686f97dead7374"
+      ],
+      "transaction_count": 3,
+      "total_volume": 615790.48,
+      "coordination_score": 16.48128673124824
+    }
+  ],
+  "market_impact": {
+    "USDT": {
+      "large_tx_count": 6,
+      "total_volume": 6490872.0,
+      "avg_tx_size": 1081812.0,
+      "avg_time_between_large_tx_hours": 0.02333333333333333,
+      "unique_whales": 3,
+      "clustering_coefficient": 0.7284313590846836
+    },
+    "WBTC": {
+      "large_tx_count": 5,
+      "total_volume": 12427101.9054,
+      "avg_tx_size": 2485420.38108,
+      "avg_time_between_large_tx_hours": 0.9774999999999999,
+      "unique_whales": 5,
+      "clustering_coefficient": 0.9618646680083416
+    }
+  },
+  "pump_dump_patterns": [],
+  "network_analysis": {
+    "network_metrics": {
+      "node_count": 20,
+      "edge_count": 19,
+      "density": 0.05,
+      "average_clustering": 0.0
+    },
+    "top_central_nodes": [
+      {
+        "address": "0x637d231a2c854904a39d36f495686f97dead7374",
+        "centrality": 0.5263157894736842
+      },
+      {
+        "address": "0x5ee5bf7ae06d1be5997a1a72006fe6c607ec6de8",
+        "centrality": 0.3157894736842105
+      },
+      {
+        "address": "0x8a25d8c9fa8c7a726137f2d618d85cbc2c083f78",
+        "centrality": 0.21052631578947367
+      },
+      {
+        "address": "0x1f2f10d1c40777ae1da742455c65828ff36df387",
+        "centrality": 0.10526315789473684
+      },
+      {
+        "address": "0x26bb75d92a3f3716b5044fb59e7d62d205336337",
+        "centrality": 0.05263157894736842
+      },
+      {
+        "address": "0x519d0a54e5e6bdc3232277da8a542adbdd379dc6",
+        "centrality": 0.05263157894736842
+      },
+      {
+        "address": "0x58b704065b7aff3ed351052f8560019e05925023",
+        "centrality": 0.05263157894736842
+      },
+      {
+        "address": "0x0f0c7fac803e548f89a7366f85c6a1ce65075ce9",
+        "centrality": 0.05263157894736842
+      },
+      {
+        "address": "0xb115aff9ce430fef6fcde91099a377795a4319bf",
+        "centrality": 0.05263157894736842
+      },
+      {
+        "address": "0xe74b109097fa2666a19119cce1c549b2ffc24d3c",
+        "centrality": 0.05263157894736842
+      }
+    ],
+    "top_bridge_nodes": [
+      {
+        "address": "0x637d231a2c854904a39d36f495686f97dead7374",
+        "betweenness": 0.06140350877192982
+      },
+      {
+        "address": "0x5ee5bf7ae06d1be5997a1a72006fe6c607ec6de8",
+        "betweenness": 0.03216374269005848
+      },
+      {
+        "address": "0x8a25d8c9fa8c7a726137f2d618d85cbc2c083f78",
+        "betweenness": 0.017543859649122806
+      },
+      {
+        "address": "0x1f2f10d1c40777ae1da742455c65828ff36df387",
+        "betweenness": 0.0
+      },
+      {
+        "address": "0x26bb75d92a3f3716b5044fb59e7d62d205336337",
+        "betweenness": 0.0
+      },
+      {
+        "address": "0x519d0a54e5e6bdc3232277da8a542adbdd379dc6",
+        "betweenness": 0.0
+      },
+      {
+        "address": "0x58b704065b7aff3ed351052f8560019e05925023",
+        "betweenness": 0.0
+      },
+      {
+        "address": "0x0f0c7fac803e548f89a7366f85c6a1ce65075ce9",
+        "betweenness": 0.0
+      },
+      {
+        "address": "0xb115aff9ce430fef6fcde91099a377795a4319bf",
+        "betweenness": 0.0
+      },
+      {
+        "address": "0xe74b109097fa2666a19119cce1c549b2ffc24d3c",
+        "betweenness": 0.0
+      }
+    ],
+    "community_count": 3,
+    "largest_community_size": 11,
+    "communities": [
+      [
+        "0xe74b109097fa2666a19119cce1c549b2ffc24d3c",
+        "0x637d231a2c854904a39d36f495686f97dead7374",
+        "0xe74e69d5e302dfd9bfabe114b058cf740a314d3c",
+        "0xe74e6d9f030b424740672f0f16b859994aee4d3c",
+        "0x26bb75d92a3f3716b5044fb59e7d62d205336337",
+        "0xe74e899cd17f2c354f5a718cf7e4486ef7c24d3c",
+        "0xe74e49de0589e5939f7e0a096f2f4be1a8650d3c",
+        "0xe74e2cfb55da3e8fe9c01767dde2c3b0704f0d3c",
+        "0x58b704065b7aff3ed351052f8560019e05925023",
+        "0x519d0a54e5e6bdc3232277da8a542adbdd379dc6",
+        "0xe74ee93c646b7694465d386a464406b59c824d3c"
+      ],
+      [
+        "0x0f0c7fac803e548f89a7366f85c6a1ce65075ce9",
+        "0x5ee5bf7ae06d1be5997a1a72006fe6c607ec6de8",
+        "0xed0c6079229e2d407672a117c22b62064f4a4312",
+        "0xb115aff9ce430fef6fcde91099a377795a4319bf",
+        "0x1f2f10d1c40777ae1da742455c65828ff36df387"
+      ],
+      [
+        "0x000000000004444c5dc75cb358380d2e3de08a90",
+        "0x3b028b4b6c567ef5f8ca1144da4fbaa0d973f228",
+        "0xbeef02961503351625926ea9a11ae13b29f5c555",
+        "0x8a25d8c9fa8c7a726137f2d618d85cbc2c083f78"
+      ]
+    ]
+  },
+  "arbitrage_patterns": [],
+  "whale_clusters": {
+    "total_whales_analyzed": 7,
+    "clusters_found": 1,
+    "noise_points": 4,
+    "cluster_details": {
+      "cluster_0": {
+        "size": 3,
+        "addresses": [
+          "0x15b325660a1C4a9582a7d834C31119C0CB9e3A42",
+          "DJnHztNmw1H56uYm98PNu5eVZ5yhi9482rZ9zA22TUUz",
+          "0x20e85118f45e08a2ddb9540ca30e703eee150299"
+        ],
+        "avg_volume": 1649.3629820431518,
+        "avg_transaction_count": 10.0,
+        "avg_whale_score": 20.01649362982043,
+        "characteristics": "Moderate Activity Traders"
+      }
+    }
+  }
+}

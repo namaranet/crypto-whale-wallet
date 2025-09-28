@@ -1,0 +1,48 @@
+{
+  "generated_at": "2025-09-07T09:44:47.194146",
+  "analyzer_type": "public_api",
+  "total_whales": 3,
+  "whales": [
+    {
+      "address": "2EkhJvG7eunHrecNsAijNx8aGcv2Kjd3schd12Gb5tmp",
+      "sol_balance": 0.612186828,
+      "sol_usd_value": 85.70615592,
+      "total_portfolio_value": 85.70615592,
+      "whale_score": 0.008570615592,
+      "classification": "\ud83d\udc20 Small Fish",
+      "recent_activity": 0,
+      "top_tokens": [],
+      "analysis_timestamp": "2025-09-07T09:44:46.193972",
+      "is_active": false
+    },
+    {
+      "address": "EKuXVPeWXkfQrvzyRwwLP169yMzStJKr7DBV7RQKP5Nh",
+      "sol_balance": 0.106817435,
+      "sol_usd_value": 14.9544409,
+      "total_portfolio_value": 14.9544409,
+      "whale_score": 40.00149544409,
+      "classification": "\ud83d\udc20 Small Fish",
+      "recent_activity": 20,
+      "top_tokens": [],
+      "analysis_timestamp": "2025-09-07T09:44:45.019819",
+      "is_active": true
+    },
+    {
+      "address": "FFTUoNzcR2MV54GNgVeDCqkDEj5xzyRgVnk1sFTgeh9B",
+      "sol_balance": 0.033080275,
+      "sol_usd_value": 4.6312385,
+      "total_portfolio_value": 4.6312385,
+      "whale_score": 40.00046312385,
+      "classification": "\ud83d\udc20 Small Fish",
+      "recent_activity": 20,
+      "top_tokens": [],
+      "analysis_timestamp": "2025-09-07T09:44:43.411225",
+      "is_active": true
+    }
+  ],
+  "summary": {
+    "total_sol_value": 105.29183532,
+    "active_whales": 2,
+    "average_whale_score": 26.670176394510666
+  }
+}

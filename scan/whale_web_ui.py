@@ -10,6 +10,7 @@ import json
 from datetime import datetime, timedelta
 import pandas as pd
 from address_labels import get_address_info, get_address_label, get_address_exchange, get_address_type
+from profitable_trader_analyzer import ProfitableTraderAnalyzer
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'whale-tracker-secret-key'
@@ -416,6 +417,7 @@ class WhaleWebDB:
 
 # Initialize database
 db = WhaleWebDB()
+profitable_analyzer = ProfitableTraderAnalyzer()
 
 @app.route('/')
 def dashboard():
@@ -500,6 +502,25 @@ def api_whale_network(address):
     """API endpoint for whale-specific network"""
     network_data = db.get_whale_network_data(address)
     return jsonify(network_data)
+
+@app.route('/profitable-traders')
+def profitable_traders():
+    """Profitable traders listing page"""
+    traders = profitable_analyzer.find_top_profitable_traders(20)
+    return render_template('profitable_traders.html', traders=traders)
+
+@app.route('/profitable-trader/<address>')
+def profitable_trader_detail(address):
+    """Profitable trader detail page"""
+    analysis = profitable_analyzer.analyze_wallet_profitability(address)
+    return render_template('profitable_trader_detail.html', analysis=analysis)
+
+@app.route('/api/profitable-traders')
+def api_profitable_traders():
+    """API endpoint for profitable traders data"""
+    limit = int(request.args.get('limit', 50))
+    traders = profitable_analyzer.find_top_profitable_traders(limit)
+    return jsonify(traders)
 
 if __name__ == '__main__':
     print("🐋 Starting Whale Tracker Web UI...")
