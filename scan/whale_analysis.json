@@ -1,41 +1,93 @@
 [
   {
-    "address": "0x8a25d8c9fa8c7a726137f2d618d85cbc2c083f78",
-    "total_volume_usd": 1609628.64897216,
-    "daily_volume_usd": 1609628.64897216,
-    "tx_count": 1,
-    "avg_tx_size_usd": 1609628.64897216,
+    "address": "0xa69babef1ca67a37ffaf7a485dfff3382056e78c",
+    "total_volume_usd": 11552265.18982992,
+    "daily_volume_usd": 11552265.18982992,
+    "tx_count": 3,
+    "avg_tx_size_usd": 3850755.0632766397,
     "tokens_traded": [
       "WBTC"
     ],
     "days_active": 1,
-    "daily_tx_frequency": 1.0,
-    "whale_score": 260.29
+    "daily_tx_frequency": 3.0,
+    "whale_score": 516.0
   },
   {
-    "address": "0x5ee5bf7ae06d1be5997a1a72006fe6c607ec6de8",
-    "total_volume_usd": 1609628.64897216,
-    "daily_volume_usd": 1609628.64897216,
-    "tx_count": 1,
-    "avg_tx_size_usd": 1609628.64897216,
-    "tokens_traded": [
-      "WBTC"
-    ],
-    "days_active": 1,
-    "daily_tx_frequency": 1.0,
-    "whale_score": 260.29
-  },
-  {
-    "address": "0x637d231a2c854904a39d36f495686f97dead7374",
-    "total_volume_usd": 541732.0,
-    "daily_volume_usd": 541732.0,
+    "address": "0x4585fe77225b41b697c938b018e2ac67ac5a20c0",
+    "total_volume_usd": 11447019.38682722,
+    "daily_volume_usd": 11447019.38682722,
     "tx_count": 2,
-    "avg_tx_size_usd": 270866.0,
+    "avg_tx_size_usd": 5723509.69341361,
+    "tokens_traded": [
+      "WBTC"
+    ],
+    "days_active": 1,
+    "daily_tx_frequency": 2.0,
+    "whale_score": 514.0
+  },
+  {
+    "address": "0x6427fc587266813b6993ae4c8de672640cb3b43f",
+    "total_volume_usd": 630865.582554,
+    "daily_volume_usd": 630865.582554,
+    "tx_count": 1,
+    "avg_tx_size_usd": 630865.582554,
     "tokens_traded": [
       "USDT"
     ],
     "days_active": 1,
+    "daily_tx_frequency": 1.0,
+    "whale_score": 157.1
+  },
+  {
+    "address": "0x000000000004444c5dc75cb358380d2e3de08a90",
+    "total_volume_usd": 630865.582554,
+    "daily_volume_usd": 630865.582554,
+    "tx_count": 1,
+    "avg_tx_size_usd": 630865.582554,
+    "tokens_traded": [
+      "USDT"
+    ],
+    "days_active": 1,
+    "daily_tx_frequency": 1.0,
+    "whale_score": 157.1
+  },
+  {
+    "address": "0xf6bfec3bdf5098dfac0e671ebce06cbead7a958e",
+    "total_volume_usd": 549730.0,
+    "daily_volume_usd": 549730.0,
+    "tx_count": 1,
+    "avg_tx_size_usd": 549730.0,
+    "tokens_traded": [
+      "WBTC"
+    ],
+    "days_active": 1,
+    "daily_tx_frequency": 1.0,
+    "whale_score": 138.44
+  },
+  {
+    "address": "0x00c600b30fb0400701010f4b080409018b9006e0",
+    "total_volume_usd": 1077470.8,
+    "daily_volume_usd": 1077470.8,
+    "tx_count": 3,
+    "avg_tx_size_usd": 359156.93333333335,
+    "tokens_traded": [
+      "WBTC"
+    ],
+    "days_active": 1,
+    "daily_tx_frequency": 3.0,
+    "whale_score": 120.16
+  },
+  {
+    "address": "0xadc0a53095a0af87f3aa29fe0715b5c28016364e",
+    "total_volume_usd": 564469.8950975599,
+    "daily_volume_usd": 564469.8950975599,
+    "tx_count": 2,
+    "avg_tx_size_usd": 282234.94754877995,
+    "tokens_traded": [
+      "WBTC"
+    ],
+    "days_active": 1,
     "daily_tx_frequency": 2.0,
-    "whale_score": 84.43
+    "whale_score": 87.38
   }
 ]
